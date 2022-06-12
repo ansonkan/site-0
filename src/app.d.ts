@@ -11,7 +11,7 @@ declare namespace App {
 }
 
 declare module 'troika-three-text' {
-  export class Text extends THREE.Object3D {
+  export class Text extends THREE.Mesh {
     text: string;
     anchorX: number | string;
     anchorY: number | string;
