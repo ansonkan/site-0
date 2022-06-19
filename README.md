@@ -42,7 +42,11 @@ You can preview the production build with `npm run preview`.
 To convert `.ttf` font files to bitmap font files with [msdf-bmfont-xml](https://github.com/soimy/msdf-bmfont-xml):
 
 ```bash
-pnpm add -g msdf-bmfont-xml
+npm i -g msdf-bmfont-xml
 
 msdf-bmfont path/to/font.tff
 ```
+
+## TODO
+
+[ ] try https://github.com/vitejs/vite/discussions/2785

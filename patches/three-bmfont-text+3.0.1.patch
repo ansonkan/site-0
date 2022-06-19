@@ -1,0 +1,14 @@
+diff --git a/node_modules/three-bmfont-text/index.js b/node_modules/three-bmfont-text/index.js
+index 929a3ee..cc6c798 100755
+--- a/node_modules/three-bmfont-text/index.js
++++ b/node_modules/three-bmfont-text/index.js
+@@ -5,7 +5,8 @@ var createIndices = require('quad-indices')
+ var vertices = require('./lib/vertices')
+ var utils = require('./lib/utils')
+ 
+-var Base = THREE.BufferGeometry
++var three = require('three')
++var Base = three.BufferGeometry
+ 
+ module.exports = function createTextGeometry (opt) {
+   return new TextGeometry(opt)

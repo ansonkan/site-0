@@ -1,24 +1,30 @@
 <script lang="ts">
   import { browser } from '$app/env';
   import { onMount, onDestroy } from 'svelte';
-  import { Scene, PerspectiveCamera, WebGLRenderer, Clock } from 'three';
-  import { Text } from 'troika-three-text';
+  import * as THREE from 'three';
+  // import { Text } from 'troika-three-text';
+  import createTextGeometry from 'three-bmfont-text';
+  import loadFont from 'load-bmfont';
+
+  import NotoSansFnt from '$assets/fonts/NotoSans/NotoSans-Regular.fnt?url';
+  import NotoSansPng from '$assets/fonts/NotoSans/NotoSans-Regular.png?url';
 
   let width = 0;
   let height = 0;
 
   let canvas: HTMLCanvasElement;
-  let scene: Scene;
-  let camera: PerspectiveCamera;
-  let renderer: WebGLRenderer;
+  let scene: THREE.Scene;
+  let camera: THREE.PerspectiveCamera;
+  let renderer: THREE.WebGLRenderer;
 
-  let text: Text;
-  let clock: Clock;
+  // let text: Text;
+  let clock: THREE.Clock;
 
   let fontSize = 50;
 
   onMount(() => {
     if (browser) {
+
       init();
     }
   });
@@ -33,36 +39,54 @@
     width = window.innerWidth;
     height = window.innerHeight;
 
-    clock = new Clock();
+    clock = new THREE.Clock();
 
-    renderer = new WebGLRenderer({ antialias: true, canvas });
+    renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(width, height);
 
     const z = 600;
     const fov = 2 * Math.atan(height / 2 / z) * (180 / Math.PI);
-    camera = new PerspectiveCamera(fov, width / height, 0.1, 1000);
+    camera = new THREE.PerspectiveCamera(fov, width / height, 0.1, 1000);
     camera.position.set(0, 0, z);
 
-    scene = new Scene();
+    scene = new THREE.Scene();
     scene.add(camera);
 
-    text = new Text();
-    scene.add(text);
+    // loadFont(NotoSansFnt, (err: unknown, font: any) => {
+    //   const textGeo: any = createTextGeometry({
+    //     font,
+    //     text: 'Hello! This is Anson :D'
+    //   });
 
-    // Set properties to configure:
-    text.text = 'Hello world!';
-    text.fontSize = fontSize;
-    text.color = 0x9966ff;
-    text.position.set(width / -2, height / 2, 0);
-    // text.outlineWidth = 0.1;
-    // text.outlineColor = 0x808080;
-    // text.debugSDF = true
-    // text.lineHeight = 0.5;
-    // text.fillOpacity = 0.5;
+    //   const textureLoader = new THREE.TextureLoader();
+    //   textureLoader.load(NotoSansPng, (texture) => {
+    //     const textMaterial = new THREE.MeshBasicMaterial({
+    //       map: texture,
+    //       transparent: true,
+    //       color: 0xaaffff
+    //     });
 
-    // Update the rendering:
-    text.sync();
+    //     const textMesh = new THREE.Mesh(textGeo, textMaterial);
+
+    //     scene.add(textMesh);
+    //   });
+    // });
+
+    // {
+    //   // try `troika-three-text`
+    //   text = new Text();
+    //   scene.add(text);
+
+    //   // Set properties to configure:
+    //   text.text = 'Hello world!';
+    //   text.fontSize = fontSize;
+    //   text.color = 0x9966ff;
+    //   text.position.set(width / -2, height / 2, 0);
+
+    //   // Update the rendering:
+    //   text.sync();
+    // }
 
     window.addEventListener('resize', onWindowResize);
 

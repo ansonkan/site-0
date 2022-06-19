@@ -10,6 +10,9 @@ declare namespace App {
   // interface Stuff {}
 }
 
+declare module 'three-bmfont-text'
+declare module 'load-bmfont'
+
 declare module 'troika-three-text' {
   export class Text extends THREE.Mesh {
     text: string;
