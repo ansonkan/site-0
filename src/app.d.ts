@@ -11,6 +11,7 @@ declare namespace App {
 }
 
 declare module 'three-bmfont-text'
+declare module 'three-bmfont-text/shaders/msdf'
 declare module 'load-bmfont'
 
 declare module 'troika-three-text' {

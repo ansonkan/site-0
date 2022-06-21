@@ -4,6 +4,7 @@
   import * as THREE from 'three'
   // import { Text } from 'troika-three-text';
   import createTextGeometry from 'three-bmfont-text'
+  import MSDFShader from 'three-bmfont-text/shaders/msdf'
   import loadFont from 'load-bmfont'
 
   import NotoSansFnt from '$assets/fonts/NotoSans/NotoSans-Regular.fnt?url'
@@ -17,7 +18,7 @@
   let camera: THREE.PerspectiveCamera
   let renderer: THREE.WebGLRenderer
 
-  // let text: Text;
+  let text: THREE.Mesh
   let clock: THREE.Clock
 
   let fontSize = 50
@@ -43,6 +44,7 @@
     renderer = new THREE.WebGLRenderer({ antialias: true, canvas })
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setSize(width, height)
+    // renderer.context.getExtension('OES_standard_derivatives')
 
     const z = 600
     const fov = 2 * Math.atan(height / 2 / z) * (180 / Math.PI)
@@ -60,15 +62,29 @@
 
       const textureLoader = new THREE.TextureLoader()
       textureLoader.load(NotoSansPng, (texture) => {
-        const textMaterial = new THREE.MeshBasicMaterial({
-          map: texture,
-          transparent: true,
-          color: 0xaaffff
-        })
+        // const textMaterial = new THREE.MeshBasicMaterial({
+        //   map: texture,
+        //   transparent: false,
+        //   color: 0xaaffff,
+        //   side: THREE.DoubleSide
+        // })
 
-        const textMesh = new THREE.Mesh(textGeo, textMaterial)
+        const textMaterial = new THREE.RawShaderMaterial(
+          MSDFShader({
+            map: texture,
+            side: THREE.DoubleSide,
+            transparent: true,
+            negate: false,
+            color: 0xffffff
+          })
+        )
+        // textMaterial.extensions = { derivatives: true }
 
-        scene.add(textMesh)
+        text = new THREE.Mesh(textGeo, textMaterial)
+
+        scene.add(text)
+
+        animate()
       })
     })
 
@@ -90,7 +106,7 @@
     window.addEventListener('resize', onWindowResize)
 
     // render();
-    animate()
+    // animate()
   }
 
   function onWindowResize() {
@@ -106,11 +122,11 @@
   }
 
   function render() {
-    // const d = clock.getDelta();
+    const d = clock.getDelta()
 
-    // text.rotateX(d);
-    // text.rotateY(d * 0.25);
-    // text.rotateZ(d * 0.15);
+    text.rotateX(d)
+    text.rotateY(d * 0.25)
+    text.rotateZ(d * 0.15)
 
     renderer.render(scene, camera)
   }
