@@ -1,77 +1,76 @@
 <script lang="ts">
-  import { browser } from '$app/env';
-  import { onMount, onDestroy } from 'svelte';
-  import * as THREE from 'three';
+  import { browser } from '$app/env'
+  import { onMount, onDestroy } from 'svelte'
+  import * as THREE from 'three'
   // import { Text } from 'troika-three-text';
-  import createTextGeometry from 'three-bmfont-text';
-  import loadFont from 'load-bmfont';
+  import createTextGeometry from 'three-bmfont-text'
+  import loadFont from 'load-bmfont'
 
-  import NotoSansFnt from '$assets/fonts/NotoSans/NotoSans-Regular.fnt?url';
-  import NotoSansPng from '$assets/fonts/NotoSans/NotoSans-Regular.png?url';
+  import NotoSansFnt from '$assets/fonts/NotoSans/NotoSans-Regular.fnt?url'
+  import NotoSansPng from '$assets/fonts/NotoSans/NotoSans-Regular.png?url'
 
-  let width = 0;
-  let height = 0;
+  let width = 0
+  let height = 0
 
-  let canvas: HTMLCanvasElement;
-  let scene: THREE.Scene;
-  let camera: THREE.PerspectiveCamera;
-  let renderer: THREE.WebGLRenderer;
+  let canvas: HTMLCanvasElement
+  let scene: THREE.Scene
+  let camera: THREE.PerspectiveCamera
+  let renderer: THREE.WebGLRenderer
 
   // let text: Text;
-  let clock: THREE.Clock;
+  let clock: THREE.Clock
 
-  let fontSize = 50;
+  let fontSize = 50
 
   onMount(() => {
     if (browser) {
-
-      init();
+      init()
     }
-  });
+  })
 
   onDestroy(() => {
     if (browser) {
-      window.removeEventListener('resize', onWindowResize);
+      window.removeEventListener('resize', onWindowResize)
     }
-  });
+  })
 
   function init() {
-    width = window.innerWidth;
-    height = window.innerHeight;
+    width = window.innerWidth
+    height = window.innerHeight
 
-    clock = new THREE.Clock();
+    clock = new THREE.Clock()
 
-    renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(width, height);
+    renderer = new THREE.WebGLRenderer({ antialias: true, canvas })
+    renderer.setPixelRatio(window.devicePixelRatio)
+    renderer.setSize(width, height)
 
-    const z = 600;
-    const fov = 2 * Math.atan(height / 2 / z) * (180 / Math.PI);
-    camera = new THREE.PerspectiveCamera(fov, width / height, 0.1, 1000);
-    camera.position.set(0, 0, z);
+    const z = 600
+    const fov = 2 * Math.atan(height / 2 / z) * (180 / Math.PI)
+    camera = new THREE.PerspectiveCamera(fov, width / height, 0.1, 1000)
+    camera.position.set(0, 0, z)
 
-    scene = new THREE.Scene();
-    scene.add(camera);
+    scene = new THREE.Scene()
+    scene.add(camera)
 
-    // loadFont(NotoSansFnt, (err: unknown, font: any) => {
-    //   const textGeo: any = createTextGeometry({
-    //     font,
-    //     text: 'Hello! This is Anson :D'
-    //   });
+    loadFont(NotoSansFnt, (err: unknown, font: any) => {
+      const textGeo: any = createTextGeometry({
+        font,
+        text: 'Hello! This is Anson :D'
+      })
 
-    //   const textureLoader = new THREE.TextureLoader();
-    //   textureLoader.load(NotoSansPng, (texture) => {
-    //     const textMaterial = new THREE.MeshBasicMaterial({
-    //       map: texture,
-    //       transparent: true,
-    //       color: 0xaaffff
-    //     });
+      const textureLoader = new THREE.TextureLoader()
+      textureLoader.load(NotoSansPng, (texture) => {
+        const textMaterial = new THREE.MeshBasicMaterial({
+          map: texture,
+          transparent: true,
+          color: 0xaaffff
+        })
 
-    //     const textMesh = new THREE.Mesh(textGeo, textMaterial);
+        const textMesh = new THREE.Mesh(textGeo, textMaterial)
 
-    //     scene.add(textMesh);
-    //   });
-    // });
+        scene.add(textMesh)
+      })
+    })
 
     // {
     //   // try `troika-three-text`
@@ -88,20 +87,20 @@
     //   text.sync();
     // }
 
-    window.addEventListener('resize', onWindowResize);
+    window.addEventListener('resize', onWindowResize)
 
     // render();
-    animate();
+    animate()
   }
 
   function onWindowResize() {
-    width = window.innerWidth;
-    height = window.innerHeight;
+    width = window.innerWidth
+    height = window.innerHeight
 
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
+    camera.aspect = width / height
+    camera.updateProjectionMatrix()
 
-    renderer.setSize(width, height);
+    renderer.setSize(width, height)
 
     // render();
   }
@@ -113,13 +112,13 @@
     // text.rotateY(d * 0.25);
     // text.rotateZ(d * 0.15);
 
-    renderer.render(scene, camera);
+    renderer.render(scene, camera)
   }
 
   function animate() {
-    window.requestAnimationFrame(animate);
+    window.requestAnimationFrame(animate)
 
-    render();
+    render()
   }
 </script>
 
