@@ -39,7 +39,6 @@
     "buffer": "^6.0.3",
     "load-bmfont": "^1.4.1",
     "three": "^0.141.0",
-    "three-bmfont-text": "^3.0.1",
-    "troika-three-text": "^0.46.4"
+    "three-bmfont-text": "^3.0.1"
   }
 }

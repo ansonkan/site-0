@@ -2,9 +2,8 @@
   import { browser } from '$app/env'
   import { onMount, onDestroy } from 'svelte'
   import * as THREE from 'three'
-  // import { Text } from 'troika-three-text';
   import createTextGeometry from 'three-bmfont-text'
-  import MSDFShader from 'three-bmfont-text/shaders/msdf'
+  import MSDFShader from 'three-bmfont-text/shaders/msdf.js'
   import loadFont from 'load-bmfont'
 
   import NotoSansFnt from '$assets/fonts/NotoSans/NotoSans-Regular.fnt?url'
@@ -41,10 +40,10 @@
 
     clock = new THREE.Clock()
 
-    renderer = new THREE.WebGLRenderer({ antialias: true, canvas })
+    // It seems WebGL2 breaks `fwidth` in `MSDFShader`
+    renderer = new THREE.WebGL1Renderer({ antialias: true, canvas })
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setSize(width, height)
-    // renderer.context.getExtension('OES_standard_derivatives')
 
     const z = 600
     const fov = 2 * Math.atan(height / 2 / z) * (180 / Math.PI)
@@ -62,13 +61,6 @@
 
       const textureLoader = new THREE.TextureLoader()
       textureLoader.load(NotoSansPng, (texture) => {
-        // const textMaterial = new THREE.MeshBasicMaterial({
-        //   map: texture,
-        //   transparent: false,
-        //   color: 0xaaffff,
-        //   side: THREE.DoubleSide
-        // })
-
         const textMaterial = new THREE.RawShaderMaterial(
           MSDFShader({
             map: texture,
