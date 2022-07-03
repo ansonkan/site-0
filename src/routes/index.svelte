@@ -17,7 +17,8 @@
   import { Font } from '@fredli74/typr'
 
   import NotoSansTcOtf from '$assets/fonts/NotoSansTC-Regular.otf?url'
-  import paths from '$assets/paths/1656479462073.json'
+  import paths from '$assets/paths/NotoSans-b7bed.json'
+  // import paths from '$assets/paths/NotoSansTC-f8c67.json'
 
   let width = 0
   let height = 0
@@ -156,18 +157,22 @@
 
     const DPR = window.devicePixelRatio || 1
     const unitsPerEm = 1000 // `font.head.unitsPerEm`
-    // const hheaAscender = 1069
-    // const hheaDescender = -293
-    const scale = (80 * DPR) / unitsPerEm
+    const hheaAscender = 1069
+    const hheaDescender = -293
+    const scale = (fontSize * DPR) / unitsPerEm
 
     // cnv.width = cnv.width
-    cnv.width = 1000
-    ctx.translate(4 * DPR, 100 * DPR)
+
+    cnv.width = Math.round(Math.abs(paths.bbox.x.max) * scale)
+    cnv.height = Math.round(Math.abs(hheaAscender - hheaDescender) * scale)
+    // console.log(Math.round(Math.abs(hheaAscender - hheaDescender) * scale))
+    // ctx.translate(0 * DPR, 100 * DPR)
+    ctx.translate(0 * DPR, Math.round(hheaAscender * scale) * DPR)
 
     ctx.fillStyle = '#FF00FF'
-    // ctx.fillRect(0, 0, cnv.width, 1)
-    // ctx.fillRect(0, -Math.round(hheaAscender * scale), cnv.width, 1)
-    // ctx.fillRect(0, -Math.round(hheaDescender * scale), cnv.width, 1)
+    ctx.fillRect(0, 0, cnv.width, 1)
+    ctx.fillRect(0, -Math.round(hheaAscender * scale), cnv.width, 1)
+    ctx.fillRect(0, -Math.round(hheaDescender * scale), cnv.width, 1)
 
     ctx.scale(scale, -scale)
 
@@ -187,15 +192,15 @@
 <canvas id="test-paths" />
 
 <div class="text">
-  <p style="font-size: {fontSize}px;">Hello! This is Anson! :D</p>
-  <p class="hk" style="font-size: {fontSize}px;">Hello! This is Anson! :D</p>
+  <p style="font-size: {fontSize}px;">Hello! I'm Anson Kan :D</p>
+  <!-- <p class="hk" style="font-size: {fontSize}px;">Hello! I'm Anson Kan :D</p>
   <p class="hk" style="font-size: {fontSize}px;">你好！ 我叫Anson諱！</p>
   <p class="hk" style="font-size: {fontSize}px;">昨日すき焼きを食べました</p>
   <p class="hk" style="font-size: {fontSize}px;">
     저는 동물을 좋아하는데 가족들이 동물을 별로 안 좋아해요.
   </p>
-  <p class="barcode" style="font-size: {fontSize}px;">Hello! This is Anson! :D</p>
-  <p class="press-start-2p" style="font-size: {fontSize}px;">Hello! This is Anson! :D</p>
+  <p class="barcode" style="font-size: {fontSize}px;">Hello! I'm Anson Kan :D</p>
+  <p class="press-start-2p" style="font-size: {fontSize}px;">Hello! I'm Anson Kan :D</p> -->
 </div>
 
 <style lang="scss">
@@ -228,6 +233,7 @@
 
   #test-paths {
     position: fixed;
+    top: 400px;
     // width: 50vw;
     // height: 50vh;
     border: 1px solid red;
