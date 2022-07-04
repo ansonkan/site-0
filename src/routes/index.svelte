@@ -13,10 +13,9 @@
     Mesh
   } from 'three'
   import Stats from 'stats.js'
-  // import { Text } from 'troika-three-text'
   import { Font } from '@fredli74/typr'
 
-  import NotoSansTcOtf from '$assets/fonts/NotoSansTC-Regular.otf?url'
+  // import NotoSansTcOtf from '$assets/fonts/NotoSansTC-Regular.otf?url'
   import paths from '$assets/paths/NotoSans-b7bed.json'
   // import paths from '$assets/paths/NotoSansTC-f8c67.json'
 
@@ -56,7 +55,6 @@
 
     clock = new Clock()
 
-    // It seems WebGL2 breaks `fwidth` in `MSDFShader`
     renderer = new WebGLRenderer({ antialias: true, canvas })
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setSize(width, height)
@@ -82,28 +80,12 @@
     scene.add(camera)
     scene.add(orthoCamera)
 
-    // {
-    //   text = new Text()
-    //   scene.add(text)
-
-    //   // Set properties to configure:
-    //   text.text = '你好！ 我叫Anson諱！'
-    //   text.font = NotoSansTcOtf
-    //   text.fontSize = fontSize
-    //   // text.color = 0x9966ff
-    //   // text.position.set(width / -2 + 10, height / 2 - 10, 0)
-
-    //   // Update the rendering:
-    //   text.sync()
-    // }
-
     window.addEventListener('resize', onWindowResize)
     window.addEventListener('wheel', onScroll)
 
     stats = new Stats()
     document.body.appendChild(stats.dom)
 
-    // render();
     animate()
   }
 
@@ -123,10 +105,6 @@
 
   function render() {
     const d = clock.getDelta()
-
-    // text.rotateX(d)
-    // text.rotateY(d * 0.25)
-    // text.rotateZ(d * 0.15)
 
     if (box) {
       box.rotateX(d)
