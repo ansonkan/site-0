@@ -19,6 +19,8 @@
   import paths from '$assets/paths/NotoSans-b7bed.json'
   // import paths from '$assets/paths/NotoSansTC-f8c67.json'
 
+  // import { test } from '$lib/Typr'
+
   let width = 0
   let height = 0
 
