@@ -1,21 +1,6 @@
 import { readUint, readUshort, readUshorts, readShort } from '../binary'
 
-interface DefaultFormat {
-  format: number
-}
-
-type SubTable =
-  | DefaultFormat
-  | ReturnType<typeof parse0>
-  | ReturnType<typeof parse4>
-  | ReturnType<typeof parse6>
-  | ReturnType<typeof parse12>
-
-export interface cmap {
-  tables: SubTable[]
-  ids: Record<string, number>
-  off: number
-}
+import type { cmap, cmapSubTable } from './types'
 
 export function parseTab(data: Uint8Array, offset: number, length: number) {
   const obj: cmap = { tables: [], ids: {}, off: offset }
@@ -51,7 +36,7 @@ export function parseTab(data: Uint8Array, offset: number, length: number) {
       offs.push(noffset)
       // var time = Date.now()
 
-      let subt: SubTable = { format }
+      let subt: cmapSubTable = { format }
 
       if (format == 0) subt = parse0(data, noffset)
       // else if (format == 2) subt.off = noffset
