@@ -328,14 +328,15 @@ function readCharString(data: Uint8Array, offset: number, length: number) {
   const arr: Array<string | number> = []
 
   while (offset < end) {
-    const b0 = data[offset],
-      b1 = data[offset + 1],
-      b2 = data[offset + 2],
-      b3 = data[offset + 3],
-      b4 = data[offset + 4]
+    const b0 = data[offset]
+    const b1 = data[offset + 1]
+    // const b2 = data[offset + 2]
+    // const b3 = data[offset + 3]
+    // const b4 = data[offset + 4]
     let vs = 1
     let op = null
     let val = null
+
     // operand
     if (b0 <= 20) {
       op = b0
@@ -405,11 +406,11 @@ function readDict(data: Uint8Array, offset: number, end: number) {
   let carr: Array<c> = []
 
   while (offset < end) {
-    const b0 = data[offset],
-      b1 = data[offset + 1],
-      b2 = data[offset + 2],
-      b3 = data[offset + 3],
-      b4 = data[offset + 4]
+    const b0 = data[offset]
+    const b1 = data[offset + 1]
+    // const b2 = data[offset + 2]
+    // const b3 = data[offset + 3]
+    // const b4 = data[offset + 4]
     let vs = 1
     let key = null
     let val = null
@@ -455,7 +456,7 @@ function readDict(data: Uint8Array, offset: number, end: number) {
         const b = data[offset + vs]
         vs++
         const nib0 = b >> 4
-          const nib1 = b & 0xf
+        const nib1 = b & 0xf
         if (nib0 != 0xf) nibs.push(nib0)
         if (nib1 != 0xf) nibs.push(nib1)
         if (nib1 == 0xf) break
