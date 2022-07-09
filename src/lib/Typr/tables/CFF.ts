@@ -36,6 +36,100 @@ const tableSE = [
   146, 147, 148, 149,   0,   0,   0,   0
 ] as const
 
+const KEYS = {
+  vs1: [
+    'version',
+    'Notice',
+    'FullName',
+    'FamilyName',
+    'Weight',
+    'FontBBox',
+    'BlueValues',
+    'OtherBlues',
+    'FamilyBlues',
+    'FamilyOtherBlues',
+    'StdHW',
+    'StdVW',
+    'escape',
+    'UniqueID',
+    'XUID',
+    'charset',
+    'Encoding',
+    'CharStrings',
+    'Private',
+    'Subrs',
+    'defaultWidthX',
+    'nominalWidthX'
+  ],
+  vs2: [
+    'Copyright',
+    'isFixedPitch',
+    'ItalicAngle',
+    'UnderlinePosition',
+    'UnderlineThickness',
+    'PaintType',
+    'CharstringType',
+    'FontMatrix',
+    'StrokeWidth',
+    'BlueScale',
+    'BlueShift',
+    'BlueFuzz',
+    'StemSnapH',
+    'StemSnapV',
+    'ForceBold',
+    '',
+    '',
+    'LanguageGroup',
+    'ExpansionFactor',
+    'initialRandomSeed',
+    'SyntheticBase',
+    'PostScript',
+    'BaseFontName',
+    'BaseFontBlend',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    'ROS',
+    'CIDFontVersion',
+    'CIDFontRevision',
+    'CIDFontType',
+    'CIDCount',
+    'UIDBase',
+    'FDArray',
+    'FDSelect',
+    'FontName'
+  ]
+} as const
+
+const CHARS = [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  '.',
+  'e',
+  'e-',
+  'reserved',
+  '-',
+  'endOfNumber'
+] as const
+
+type Key = typeof KEYS.vs1[number] | typeof KEYS.vs2[number]
+// type Value = number | null | Array<number | null>
+type Dict = ReturnType<typeof readDict>
+
+const isNumArr = (arr: unknown): arr is number[] =>
+  Array.isArray(arr) && !arr.some((x) => typeof x === 'number')
+
 export function parseTab(data: Uint8Array, offset: number, length: number) {
   data = new Uint8Array(data.buffer, offset, length)
   offset = 0
@@ -52,27 +146,32 @@ export function parseTab(data: Uint8Array, offset: number, length: number) {
   // console.log(major, minor, hdrSize, offsize)
 
   // Name INDEX
-  const ninds: number[] = []
-  offset = readIndex(data, offset, ninds)
-  const names: string[] = []
+  const NAME_INDEX = readIndex(data, offset)
+  const ninds = NAME_INDEX.indexes
+  offset = NAME_INDEX.offset
 
+  const names: string[] = []
   for (let i = 0; i < ninds.length - 1; i++)
     names.push(readASCII(data, offset + ninds[i], ninds[i + 1] - ninds[i]))
   offset += ninds[ninds.length - 1]
 
   // Top DICT INDEX
-  const tdinds: number[] = []
-  offset = readIndex(data, offset, tdinds)
+  const DICT_INDEX = readIndex(data, offset)
+  const tdinds = DICT_INDEX.indexes
+  offset = DICT_INDEX.offset
+
   // Top DICT Data
-  const topDicts: Array<ReturnType<typeof readDict>> = []
+  const topDicts: Dict[] = []
   for (let i = 0; i < tdinds.length - 1; i++)
     topDicts.push(readDict(data, offset + tdinds[i], offset + tdinds[i + 1]))
   offset += tdinds[tdinds.length - 1]
   const topdict = topDicts[0]
 
   // String INDEX
-  const sinds: number[] = []
-  offset = readIndex(data, offset, sinds)
+  const STR_INDEX = readIndex(data, offset)
+  const sinds = STR_INDEX.indexes
+  offset = STR_INDEX.offset
+
   // String Data
   const strings: string[] = []
   for (let i = 0; i < sinds.length - 1; i++)
@@ -80,38 +179,62 @@ export function parseTab(data: Uint8Array, offset: number, length: number) {
   offset += sinds[sinds.length - 1]
 
   // Global Subr INDEX  (subroutines)
-  readSubrs(data, offset, topdict)
+  const step1 = {
+    ...topdict,
+    ...readSubrs(data, offset)
+  }
 
   // charstrings
-
-  if (topdict['CharStrings']) topdict['CharStrings'] = readBytes(data, topdict['CharStrings'])
+  const step2 = {
+    ...step1,
+    CharStrings:
+      step1.CharStrings && typeof step1.CharStrings === 'number'
+        ? readBytes(data, step1.CharStrings)
+        : step1.CharStrings
+  }
 
   // CID font
-  if (topdict['ROS']) {
-    offset = topdict['FDArray']
-    const fdind: number[] = []
-    offset = readIndex(data, offset, fdind)
+  const step3 = {
+    ...step2,
+    ...(() => {
+      if (step2.ROS && typeof step2.FDArray === 'number' && typeof step2.FDSelect === 'number') {
+        offset = step2.FDArray
 
-    topdict['FDArray'] = []
-    for (let i = 0; i < fdind.length - 1; i++) {
-      const dict = readDict(data, offset + fdind[i], offset + fdind[i + 1])
-      _readFDict(data, dict, strings)
-      topdict['FDArray'].push(dict)
-    }
-    offset += fdind[fdind.length - 1]
+        const FS_INDEX = readIndex(data, offset)
+        offset = FS_INDEX.offset
+        const fdind = FS_INDEX.indexes
 
-    offset = topdict['FDSelect']
-    topdict['FDSelect'] = []
-    const fmt = data[offset]
-    offset++
-    if (fmt == 3) {
-      const rns = readUshort(data, offset)
-      offset += 2
-      for (let i = 0; i < rns + 1; i++) {
-        topdict['FDSelect'].push(readUshort(data, offset), data[offset + 2])
-        offset += 3
+        const FDArray: Array<Omit<Dict, 'Private'> & ReturnType<typeof _readFDict>> = []
+        for (let i = 0; i < fdind.length - 1; i++) {
+          const dict = readDict(data, offset + fdind[i], offset + fdind[i + 1])
+          FDArray.push({
+            ...dict,
+            ..._readFDict(data, dict, strings)
+          })
+        }
+        offset += fdind[fdind.length - 1]
+
+        offset = step2.FDSelect
+        const FDSelect: number[] = []
+        const fmt = data[offset]
+        offset++
+        if (fmt == 3) {
+          const rns = readUshort(data, offset)
+          offset += 2
+          for (let i = 0; i < rns + 1; i++) {
+            FDSelect.push(readUshort(data, offset), data[offset + 2])
+            offset += 3
+          }
+        } else throw fmt
+
+        return {
+          FDArray,
+          FDSelect
+        }
       }
-    } else throw fmt
+
+      return {}
+    })()
   }
 
   // Encoding
@@ -119,59 +242,105 @@ export function parseTab(data: Uint8Array, offset: number, length: number) {
   //   topdict['Encoding'] = readEncoding(data, topdict['Encoding'], topdict['CharStrings'].length)
 
   // charset
-  if (topdict['charset'])
-    topdict['charset'] = readCharset(data, topdict['charset'], topdict['CharStrings'].length)
-
-  _readFDict(data, topdict, strings)
-  return topdict
-}
-
-function _readFDict(data: Uint8Array, dict: Record<string, any>, ss: any) {
-  if (dict['Private']) {
-    const offset = dict['Private'][1]
-    dict['Private'] = readDict(data, offset, offset + dict['Private'][0])
-    if (dict['Private']['Subrs'])
-      readSubrs(data, offset + dict['Private']['Subrs'], dict['Private'])
+  const step4 = {
+    ...step3,
+    charset:
+      typeof step3.charset === 'number' && Array.isArray(step3.CharStrings)
+        ? readCharset(data, step3.charset, step3.CharStrings.length)
+        : step3.charset
   }
-  for (const p in dict)
-    if (['FamilyName', 'FontName', 'FullName', 'Notice', 'version', 'Copyright'].indexOf(p) != -1)
-      dict[p] = ss[dict[p] - 426 + 35]
+
+  return {
+    ...step4,
+    ..._readFDict(data, step4, strings)
+  }
 }
 
-function readSubrs(data: Uint8Array, offset: number, obj: any) {
-  obj['Subrs'] = readBytes(data, offset)
+const TargetedKeys = [
+  'FamilyName',
+  'FontName',
+  'FullName',
+  'Notice',
+  'version',
+  'Copyright'
+] as const
+
+function _readFDict(
+  data: Uint8Array,
+  dict: Pick<Dict, 'Private' | typeof TargetedKeys[number]>,
+  ss: string[]
+) {
+  const step1 = {
+    ...dict,
+    ...(() => {
+      if (isNumArr(dict.Private)) {
+        const offset = dict.Private[1]
+        const Private = readDict(data, offset, offset + dict.Private[0])
+
+        return {
+          Private: {
+            ...Private,
+            ...(Private.Subrs && typeof Private.Subrs === 'number'
+              ? readSubrs(data, offset + Private.Subrs)
+              : {})
+          }
+        }
+      }
+
+      return {}
+    })()
+  }
+
+  return TargetedKeys.reduce((acc, cur) => {
+    const val = acc[cur]
+    if (typeof val === 'number' && val) {
+      return {
+        ...acc,
+        [cur]: ss[val - 426 + 35]
+      }
+    }
+
+    return acc
+  }, step1)
+}
+
+function readSubrs(data: Uint8Array, offset: number) {
+  const Subrs = readBytes(data, offset)
 
   let bias: number
-  const nSubrs = obj['Subrs'].length + 1
+  const nSubrs = Subrs.length + 1
   if (nSubrs < 1240) bias = 107
   else if (nSubrs < 33900) bias = 1131
   else bias = 32768
-  obj['Bias'] = bias
+
+  return {
+    Subrs,
+    Bias: bias
+  }
 }
 
 function readBytes(data: Uint8Array, offset: number) {
-  const arr: number[] = []
-  offset = readIndex(data, offset, arr)
+  const { offset: off, indexes } = readIndex(data, offset)
 
   const subrs: Uint8Array[] = []
-  const arl = arr.length - 1
-  const no = data.byteOffset + offset
+  const arl = indexes.length - 1
+  const no = data.byteOffset + off
   for (let i = 0; i < arl; i++) {
-    const ari = arr[i]
-    subrs.push(new Uint8Array(data.buffer, no + ari, arr[i + 1] - ari))
+    const ari = indexes[i]
+    subrs.push(new Uint8Array(data.buffer, no + ari, indexes[i + 1] - ari))
   }
   return subrs
 }
 
-function glyphByUnicode(cff, code) {
-  for (let i = 0; i < cff['charset'].length; i++) if (cff['charset'][i] == code) return i
+function glyphByUnicode(charset: number[], code: number) {
+  for (let i = 0; i < charset.length; i++) if (charset[i] == code) return i
   return -1
 }
 
 // glyph by standard encoding
-function glyphBySE(cff, charcode: number) {
-  if (charcode < 0 || charcode > 255) return -1
-  return glyphByUnicode(cff, tableSE[charcode])
+export function glyphBySE({ charset }: Dict, charcode: number) {
+  if (charcode < 0 || charcode > 255 || !isNumArr(charset)) return -1
+  return glyphByUnicode(charset, tableSE[charcode])
 }
 
 /*readEncoding : function(data, offset, num)
@@ -239,24 +408,26 @@ function readCharset(data: Uint8Array, offset: number, num: number) {
   return charset
 }
 
-function readIndex(data: Uint8Array, offset: number, inds: number[]) {
+function readIndex(data: Uint8Array, offset: number) {
+  const indexes: number[] = []
+
   const count = readUshort(data, offset) + 1
   offset += 2
   const offsize = data[offset]
   offset++
 
   if (offsize == 1) {
-    for (let i = 0; i < count; i++) inds.push(data[offset + i])
+    for (let i = 0; i < count; i++) indexes.push(data[offset + i])
   } else if (offsize == 2) {
-    for (let i = 0; i < count; i++) inds.push(readUshort(data, offset + i * 2))
+    for (let i = 0; i < count; i++) indexes.push(readUshort(data, offset + i * 2))
   } else if (offsize == 3) {
-    for (let i = 0; i < count; i++) inds.push(readUint(data, offset + i * 3 - 1) & 0x00ffffff)
+    for (let i = 0; i < count; i++) indexes.push(readUint(data, offset + i * 3 - 1) & 0x00ffffff)
   } else if (offsize == 4) {
-    for (let i = 0; i < count; i++) inds.push(readUint(data, offset + i * 4))
+    for (let i = 0; i < count; i++) indexes.push(readUint(data, offset + i * 4))
   } else if (count != 1) throw 'unsupported offset size: ' + offsize + ', count: ' + count
 
   offset += count * offsize
-  return offset - 1
+  return { offset: offset - 1, indexes }
 }
 
 export function getCharString(data: Uint8Array, offset: number) {
@@ -265,55 +436,24 @@ export function getCharString(data: Uint8Array, offset: number) {
   // const b2 = data[offset + 2]
   // const b3 = data[offset + 3]
   // const b4 = data[offset + 4]
+
   let vs = 1
   let op = null
   let val = null
 
-  // operand
-  if (b0 <= 20) {
-    op = b0
-    vs = 1
-  }
-
-  if (b0 == 12) {
-    op = b0 * 100 + b1
-    vs = 2
-  }
-
-  //if(b0==19 || b0==20) { op = b0/*+" "+b1*/;  vs=2; }
-  if (21 <= b0 && b0 <= 27) {
-    op = b0
-    vs = 1
-  }
-
-  if (b0 == 28) {
-    val = readShort(data, offset + 1)
-    vs = 3
-  }
-
-  if (29 <= b0 && b0 <= 31) {
-    op = b0
-    vs = 1
-  }
-
-  if (32 <= b0 && b0 <= 246) {
-    val = b0 - 139
-    vs = 1
-  }
-
-  if (247 <= b0 && b0 <= 250) {
-    val = (b0 - 247) * 256 + b1 + 108
-    vs = 2
-  }
-
-  if (251 <= b0 && b0 <= 254) {
-    val = -(b0 - 251) * 256 - b1 - 108
-    vs = 2
-  }
-
-  if (b0 == 255) {
-    val = readInt(data, offset + 1) / 0xffff
-    vs = 5
+  // prettier-ignore
+  {
+    // operand
+    if (b0 <= 20) { op = b0; vs = 1; }
+    if (b0 == 12) { op = b0 * 100 + b1; vs = 2; }
+    // if (b0 == 19 || b0 == 20) { op = b0 /* +" "+b1 */; vs = 2; }  
+    if (21 <= b0 && b0 <= 27) { op = b0; vs = 1; }
+    if (b0 == 28) { val = readShort(data, offset + 1); vs = 3; }
+    if (29 <= b0 && b0 <= 31) { op = b0; vs = 1; }
+    if (32 <= b0 && b0 <= 246) { val = b0 - 139; vs = 1; }
+    if (247 <= b0 && b0 <= 250) { val = (b0 - 247) * 256 + b1 + 108; vs = 2; }
+    if (251 <= b0 && b0 <= 254) { val = -(b0 - 251) * 256 - b1 - 108; vs = 2; }
+    if (b0 == 255) { val = readInt(data, offset + 1) / 0xffff; vs = 5; }
   }
 
   return {
@@ -333,59 +473,24 @@ function readCharString(data: Uint8Array, offset: number, length: number) {
     // const b2 = data[offset + 2]
     // const b3 = data[offset + 3]
     // const b4 = data[offset + 4]
+
     let vs = 1
     let op = null
     let val = null
 
-    // operand
-    if (b0 <= 20) {
-      op = b0
-      vs = 1
-    }
-
-    if (b0 == 12) {
-      op = b0 * 100 + b1
-      vs = 2
-    }
-
-    if (b0 == 19 || b0 == 20) {
-      op = b0 /*+" "+b1*/
-      vs = 2
-    }
-
-    if (21 <= b0 && b0 <= 27) {
-      op = b0
-      vs = 1
-    }
-
-    if (b0 == 28) {
-      val = readShort(data, offset + 1)
-      vs = 3
-    }
-
-    if (29 <= b0 && b0 <= 31) {
-      op = b0
-      vs = 1
-    }
-
-    if (32 <= b0 && b0 <= 246) {
-      val = b0 - 139
-      vs = 1
-    }
-
-    if (247 <= b0 && b0 <= 250) {
-      val = (b0 - 247) * 256 + b1 + 108
-      vs = 2
-    }
-
-    if (251 <= b0 && b0 <= 254) {
-      val = -(b0 - 251) * 256 - b1 - 108
-      vs = 2
-    }
-
-    if (b0 == 255) {
-      val = readInt(data, offset + 1) / 0xffff
-      vs = 5
+    // prettier-ignore
+    {
+      // operand
+      if (b0 <= 20) { op = b0; vs = 1; }
+      if (b0 == 12) { op = b0 * 100 + b1; vs = 2; }
+      if (b0 == 19 || b0 == 20) { op = b0 /* +" "+b1 */; vs = 2; }
+      if (21 <= b0 && b0 <= 27) { op = b0; vs = 1; }
+      if (b0 == 28) { val = readShort(data, offset + 1); vs = 3; }
+      if (29 <= b0 && b0 <= 31) { op = b0; vs = 1; }
+      if (32 <= b0 && b0 <= 246) { val = b0 - 139; vs = 1; }
+      if (247 <= b0 && b0 <= 250) { val = (b0 - 247) * 256 + b1 + 108; vs = 2; }
+      if (251 <= b0 && b0 <= 254) { val = -(b0 - 251) * 256 - b1 - 108; vs = 2; }
+      if (b0 == 255) { val = readInt(data, offset + 1) / 0xffff; vs = 5; }
     }
 
     arr.push(val != null ? val : 'o' + op)
@@ -400,10 +505,8 @@ function readCharString(data: Uint8Array, offset: number, length: number) {
 }
 
 function readDict(data: Uint8Array, offset: number, end: number) {
-  // var dict = []
-  type c = number | null
-  const dict: Record<string, string | c | Array<c>> = {}
-  let carr: Array<c> = []
+  const dict: Partial<Record<Key, number | null | Array<number | null>>> = {}
+  let carr: Array<number | null> = []
 
   while (offset < end) {
     const b0 = data[offset]
@@ -412,39 +515,18 @@ function readDict(data: Uint8Array, offset: number, end: number) {
     // const b3 = data[offset + 3]
     // const b4 = data[offset + 4]
     let vs = 1
-    let key = null
-    let val = null
+    let key: Key | null = null
+    let val: number | null = null
 
-    // operand
-    if (b0 == 28) {
-      val = readShort(data, offset + 1)
-      vs = 3
-    }
-
-    if (b0 == 29) {
-      val = readInt(data, offset + 1)
-      vs = 5
-    }
-
-    if (32 <= b0 && b0 <= 246) {
-      val = b0 - 139
-      vs = 1
-    }
-
-    if (247 <= b0 && b0 <= 250) {
-      val = (b0 - 247) * 256 + b1 + 108
-      vs = 2
-    }
-
-    if (251 <= b0 && b0 <= 254) {
-      val = -(b0 - 251) * 256 - b1 - 108
-      vs = 2
-    }
-
-    if (b0 == 255) {
-      val = readInt(data, offset + 1) / 0xffff
-      vs = 5
-      throw 'unknown number'
+    // prettier-ignore
+    {
+      // operand
+      if (b0 == 28) { val = readShort(data, offset + 1); vs = 3; }
+      if (b0 == 29) { val = readInt  (data, offset + 1); vs = 5; }
+      if (32  <= b0 && b0 <= 246) { val =   b0 - 139;                   vs = 1; }
+      if (247 <= b0 && b0 <= 250) { val =  (b0 - 247) * 256 + b1 + 108; vs = 2; }
+      if (251 <= b0 && b0 <= 254) { val = -(b0 - 251) * 256 - b1 - 108; vs = 2; }
+      if (b0 == 255) { val = readInt(data, offset + 1) / 0xffff; vs = 5; throw 'unknown number'; }
     }
 
     if (b0 == 30) {
@@ -461,85 +543,20 @@ function readDict(data: Uint8Array, offset: number, end: number) {
         if (nib1 != 0xf) nibs.push(nib1)
         if (nib1 == 0xf) break
       }
+
       let s = ''
-      const chars = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, '.', 'e', 'e-', 'reserved', '-', 'endOfNumber']
-      for (let i = 0; i < nibs.length; i++) s += chars[nibs[i]]
+      for (let i = 0; i < nibs.length; i++) s += CHARS[nibs[i]]
       // console.log(nibs);
       val = parseFloat(s)
     }
 
     if (b0 <= 21) {
       // operator
-      const keys = [
-        'version',
-        'Notice',
-        'FullName',
-        'FamilyName',
-        'Weight',
-        'FontBBox',
-        'BlueValues',
-        'OtherBlues',
-        'FamilyBlues',
-        'FamilyOtherBlues',
-        'StdHW',
-        'StdVW',
-        'escape',
-        'UniqueID',
-        'XUID',
-        'charset',
-        'Encoding',
-        'CharStrings',
-        'Private',
-        'Subrs',
-        'defaultWidthX',
-        'nominalWidthX'
-      ]
-
-      key = keys[b0]
+      key = KEYS.vs1[b0]
       vs = 1
+
       if (b0 == 12) {
-        const keys = [
-          'Copyright',
-          'isFixedPitch',
-          'ItalicAngle',
-          'UnderlinePosition',
-          'UnderlineThickness',
-          'PaintType',
-          'CharstringType',
-          'FontMatrix',
-          'StrokeWidth',
-          'BlueScale',
-          'BlueShift',
-          'BlueFuzz',
-          'StemSnapH',
-          'StemSnapV',
-          'ForceBold',
-          '',
-          '',
-          'LanguageGroup',
-          'ExpansionFactor',
-          'initialRandomSeed',
-          'SyntheticBase',
-          'PostScript',
-          'BaseFontName',
-          'BaseFontBlend',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          'ROS',
-          'CIDFontVersion',
-          'CIDFontRevision',
-          'CIDFontType',
-          'CIDCount',
-          'UIDBase',
-          'FDArray',
-          'FDSelect',
-          'FontName'
-        ]
-        key = keys[b1]
+        key = KEYS.vs2[b1]
         vs = 2
       }
     }
@@ -551,5 +568,6 @@ function readDict(data: Uint8Array, offset: number, end: number) {
 
     offset += vs
   }
+
   return dict
 }
