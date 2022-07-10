@@ -13,7 +13,8 @@ const config = {
       default: true
     },
     alias: {
-      $assets: 'src/assets'
+      $assets: 'src/assets',
+      $lib: 'src/lib'
     },
     vite: {
       assetsInclude: ['**/*.gltf', '**/*.fnt']

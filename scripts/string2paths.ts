@@ -3,10 +3,13 @@ import { fileURLToPath } from 'node:url'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 
-import { Font } from '@fredli74/typr'
+// import { Font } from '@fredli74/typr'
 import { Bezier } from 'bezier-js'
 
-import type { Path } from '@fredli74/typr'
+import { parse } from '../src/lib/Typr'
+import { shape } from '../src/lib/Typr/U/shape'
+import { shapeToPath } from '../src/lib/Typr/U/shapeToPath'
+// import type { Path } from '@fredli74/typr'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -45,12 +48,11 @@ const OUTPUT = {
 }
 
 const data = readFileSync(FONT_GETTERS.NotoSans())
-const font = new Font(toArrayBuffer(data))
+const font = parse(toArrayBuffer(data))
 
 writeFileSync(OUTPUT.parsedFonts, JSON.stringify(font))
 
-const glyphs = font.stringToGlyphs(text)
-const paths = font.glyphsToPath(glyphs)
+const paths = shapeToPath(font, shape(font, text))
 
 writeFileSync(OUTPUT.paths, JSON.stringify({ ...paths, bbox: getBoundingBox(paths) }))
 
@@ -63,7 +65,7 @@ function toArrayBuffer(buf: Buffer) {
   return ab
 }
 
-function getBoundingBox({ cmds, crds }: Path) {
+function getBoundingBox({ cmds, crds }: { cmds: string[]; crds: number[] }) {
   let c = 0
   let last = {
     x: 0,

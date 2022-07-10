@@ -1,10 +1,17 @@
-import { readUshort, readFixed, readUint, readShort } from '../binary'
+import { readShort, readUshort, readUint, readFixed } from '../binary'
 
-import type { Font } from '../types'
-
-export function parseTab(data: Uint8Array, offset: number) {
+/**
+ *
+ * @param {Uint8Array} data
+ * @param {number} offset
+ * @param {number} length
+ * @param {*} font
+ * @returns
+ */
+export function parseTab(data, offset, length, font) {
   const version = readUshort(data, offset)
-  if (version == 1) return parseV1(data, offset)
+  if (version == 1) return parseV1(data, offset, length, font)
+
   const nTables = readUshort(data, offset + 2)
   offset += 4
 
@@ -15,16 +22,17 @@ export function parseTab(data: Uint8Array, offset: number) {
     offset += 2
     const coverage = readUshort(data, offset)
     offset += 2
+
     let format = coverage >>> 8
-    /* I have seen format 128 once, that's why I do */
-    format &= 0xf
+    format &= 0xf // I have seen format 128 once, that's why I do
     if (format == 0) offset = readFormat0(data, offset, map)
-    //else throw "unknown kern table format: "+format;
+    // else throw 'unknown kern table format: ' + format
   }
+
   return map
 }
 
-function parseV1(data: Uint8Array, offset: number) {
+function parseV1(data, offset) {
   const version = readFixed(data, offset) // 0x00010000
   const nTables = readUint(data, offset + 4)
   offset += 8
@@ -41,16 +49,18 @@ function parseV1(data: Uint8Array, offset: number) {
     if (format == 0) offset = readFormat0(data, offset, map)
     // else throw 'unknown kern table format: ' + format
   }
+
   return map
 }
 
-function readFormat0(data: Uint8Array, offset: number, map: Font['kern']) {
+function readFormat0(data, offset, map) {
   let pleft = -1
   const nPairs = readUshort(data, offset)
   const searchRange = readUshort(data, offset + 2)
   const entrySelector = readUshort(data, offset + 4)
   const rangeShift = readUshort(data, offset + 6)
   offset += 8
+
   for (let j = 0; j < nPairs; j++) {
     const left = readUshort(data, offset)
     offset += 2
@@ -58,14 +68,17 @@ function readFormat0(data: Uint8Array, offset: number, map: Font['kern']) {
     offset += 2
     const value = readShort(data, offset)
     offset += 2
+
     if (left != pleft) {
       map.glyph1.push(left)
       map.rval.push({ glyph2: [], vals: [] })
     }
+
     const rval = map.rval[map.rval.length - 1]
     rval.glyph2.push(right)
     rval.vals.push(value)
     pleft = left
   }
+
   return offset
 }

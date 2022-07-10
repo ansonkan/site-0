@@ -26,10 +26,17 @@ const names = [
   'wwsSubfamilyName',
   'lightPalette',
   'darkPalette'
-] as const
+]
 
-export function parseTab(data: Uint8Array, offset: number) {
-  const obj: Record<string, Record<string, string | number>> = {}
+/**
+ *
+ * @param {Uint8Array} data
+ * @param {number} offset
+ * @returns
+ */
+export function parseTab(data, offset) {
+  const obj = {}
+
   const format = readUshort(data, offset)
   offset += 2
   const count = readUshort(data, offset)
@@ -37,7 +44,7 @@ export function parseTab(data: Uint8Array, offset: number) {
   const stringOffset = readUshort(data, offset)
   offset += 2
 
-  //console.log(format,count);
+  // console.log(format, count)
 
   const offset0 = offset
 
@@ -57,7 +64,7 @@ export function parseTab(data: Uint8Array, offset: number) {
     // console.log(platformID, encodingID, languageID.toString(16), nameID, length, noffset)
 
     const soff = offset0 + count * 12 + noffset
-    let str: string
+    let str
     if (platformID == 0) str = readUnicode(data, soff, slen / 2)
     else if (platformID == 3 && encodingID == 0) str = readUnicode(data, soff, slen / 2)
     else if (encodingID == 0) str = readASCII(data, soff, slen)
@@ -76,39 +83,37 @@ export function parseTab(data: Uint8Array, offset: number) {
     const tid = 'p' + platformID + ',' + languageID.toString(16) // Typr._platforms[platformID];
     if (obj[tid] == null) obj[tid] = {}
     obj[tid][names[nameID]] = str
-    obj[tid]['_lang'] = languageID
+    obj[tid]._lang = languageID
     // console.log(tid, obj[tid])
   }
-  /*
-  if(format == 1)
-  {
-    var langTagCount = bin.readUshort(data, offset);  offset += 2;
-    for(var i=0; i<langTagCount; i++)
-    {
-      var length  = bin.readUshort(data, offset);  offset += 2;
-      var noffset = bin.readUshort(data, offset);  offset += 2;
-    }
-  }
-  */
 
-  //console.log(obj);
+  // if (format == 1) {
+  //   const langTagCount = readUshort(data, offset)
+  //   offset += 2
+  //   for (const i = 0; i < langTagCount; i++) {
+  //     const length = readUshort(data, offset)
+  //     offset += 2
+  //     const noffset = readUshort(data, offset)
+  //     offset += 2
+  //   }
+  // }
+
+  // console.log(obj)
   const psn = 'postScriptName'
 
-  for (const p in obj) if (obj[p][psn] != null && obj[p]['_lang'] == 0x0409) return obj[p] // United States
-  for (const p in obj) if (obj[p][psn] != null && obj[p]['_lang'] == 0x0000) return obj[p] // Universal
-  for (const p in obj) if (obj[p][psn] != null && obj[p]['_lang'] == 0x0c0c) return obj[p] // Canada
-  for (const p in obj) if (obj[p][psn] != null) return obj[p]
+  for (let p in obj) if (obj[p][psn] != null && obj[p]._lang == 0x0409) return obj[p] // United States
+  for (let p in obj) if (obj[p][psn] != null && obj[p]._lang == 0x0000) return obj[p] // Universal
+  for (let p in obj) if (obj[p][psn] != null && obj[p]._lang == 0x0c0c) return obj[p] // Canada
+  for (let p in obj) if (obj[p][psn] != null) return obj[p]
 
   let out
-  for (const p in obj) {
+  for (let p in obj) {
     out = obj[p]
     break
   }
 
-  if (out) {
-    console.log('returning name table with languageID ' + out._lang)
-    if (out[psn] == null && out['ID'] != null) out[psn] = out['ID']
-  }
+  console.log('returning name table with languageID ' + out._lang)
 
+  if (out[psn] == null && out.ID != null) out[psn] = out.ID
   return out
 }
