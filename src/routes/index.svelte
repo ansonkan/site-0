@@ -13,11 +13,19 @@
     Mesh
   } from 'three'
   import Stats from 'stats.js'
-  import { Font } from '@fredli74/typr'
+  // import { Font } from '@fredli74/typr'
+
+  // import { parse } from '$lib/CustomTypr'
+  // import { shape } from '$lib/CustomTypr/U/shape'
+  // import { shapeToPath } from '$lib/CustomTypr/U/shapeToPath'
+  // import { pathToContext } from '$lib/CustomTypr/U/pathToContext'
+  import Typr from '$lib/Typr/Typr'
 
   // import NotoSansTcOtf from '$assets/fonts/NotoSansTC-Regular.otf?url'
-  import paths from '$assets/paths/NotoSans-b7bed.json'
-  // import paths from '$assets/paths/NotoSansTC-f8c67.json'
+  // import paths from '$assets/paths/NotoSans-b7bed.json'
+  import paths from '$assets/paths/NotoSansTC-f8c67.json'
+  // import FontJson from '$assets/parsed-fonts/NotoSansTC.json'
+  // import paths from '$assets/paths/Test.json'
 
   // import { test } from '$lib/Typr'
 
@@ -37,11 +45,15 @@
 
   let fontSize = 50
 
+  let word: string
+
+  // $: drawPaths()
+
   onMount(() => {
     if (browser) {
       init()
 
-      drawPaths()
+      // drawPaths()
     }
   })
 
@@ -116,6 +128,8 @@
 
     renderer.render(scene, camera)
     // renderer.render(scene, orthoCamera)
+
+    drawPaths()
   }
 
   function animate() {
@@ -127,7 +141,9 @@
   }
 
   function drawPaths() {
-    const dummyFont = new Font(new ArrayBuffer(1024))
+    // console.log('drawPaths...', word)
+    // if (!browser || !word) return
+    // const dummyFont = new Font(new ArrayBuffer(1024))
 
     // const cnv = document.createElement('canvas')
     const cnv = document.getElementById('test-paths') as HTMLCanvasElement
@@ -142,7 +158,7 @@
     const scale = (fontSize * DPR) / unitsPerEm
 
     // cnv.width = cnv.width
-
+    // cnv.width = 1000
     cnv.width = Math.round(Math.abs(paths.bbox.x.max) * scale)
     cnv.height = Math.round(Math.abs(hheaAscender - hheaDescender) * scale)
     // console.log(Math.round(Math.abs(hheaAscender - hheaDescender) * scale))
@@ -156,7 +172,10 @@
 
     ctx.scale(scale, -scale)
 
-    dummyFont.pathToContext(paths, ctx)
+    // const font = Array.isArray(FontJson) ? FontJson[0] : FontJson
+    // const paths = shapeToPath(font, shape(font, word))
+
+    Typr.U.pathToContext(paths, ctx)
     ctx.fill()
 
     const ct = new CanvasTexture(ctx.canvas)
@@ -181,6 +200,7 @@
   </p>
   <p class="barcode" style="font-size: {fontSize}px;">Hello! I'm Anson Kan :D</p>
   <p class="press-start-2p" style="font-size: {fontSize}px;">Hello! I'm Anson Kan :D</p> -->
+  <input bind:value={word} type="text" />
 </div>
 
 <style lang="scss">
