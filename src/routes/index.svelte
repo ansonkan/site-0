@@ -16,8 +16,8 @@
   import { Font } from '@fredli74/typr'
 
   // import NotoSansTcOtf from '$assets/fonts/NotoSansTC-Regular.otf?url'
-  import paths from '$assets/paths/NotoSans-b7bed.json'
-  // import paths from '$assets/paths/NotoSansTC-f8c67.json'
+  // import paths from '$assets/paths/NotoSans-b7bed.json'
+  import paths from '$assets/paths/NotoSansTC-f8c67.json'
 
   // import { test } from '$lib/Typr'
 
@@ -136,9 +136,9 @@
     if (!ctx) return
 
     const DPR = window.devicePixelRatio || 1
-    const unitsPerEm = 1000 // `font.head.unitsPerEm`
-    const hheaAscender = 1069
-    const hheaDescender = -293
+    const unitsPerEm = paths.unitsPerEm // `font.head.unitsPerEm`
+    const hheaAscender = paths.ascender
+    const hheaDescender = paths.descender
     const scale = (fontSize * DPR) / unitsPerEm
 
     // cnv.width = cnv.width

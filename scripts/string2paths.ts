@@ -44,15 +44,24 @@ const OUTPUT = {
   parsedFonts: join(ASSETS_DIR, 'parsed-fonts', `${fontName}.json`)
 }
 
-const data = readFileSync(FONT_GETTERS.NotoSans())
+const data = readFileSync(FONT_GETTERS[fontName]())
 const font = new Font(toArrayBuffer(data))
 
-writeFileSync(OUTPUT.parsedFonts, JSON.stringify(font))
+// writeFileSync(OUTPUT.parsedFonts, JSON.stringify(font))
 
 const glyphs = font.stringToGlyphs(text)
 const paths = font.glyphsToPath(glyphs)
 
-writeFileSync(OUTPUT.paths, JSON.stringify({ ...paths, bbox: getBoundingBox(paths) }))
+writeFileSync(
+  OUTPUT.paths,
+  JSON.stringify({
+    ...paths,
+    unitsPerEm: font.head?.unitsPerEm,
+    ascender: font.hhea?.ascender,
+    descender: font.hhea?.descender,
+    bbox: getBoundingBox(paths)
+  })
+)
 
 function toArrayBuffer(buf: Buffer) {
   const ab = new ArrayBuffer(buf.length)
