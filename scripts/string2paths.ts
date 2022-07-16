@@ -135,20 +135,6 @@ function getBoundingBox({ cmds, crds }: Path) {
       )
       const bbox = cubic.bbox()
 
-      // console.log('Cubic bézier curve --------')
-      // console.log([
-      //   last.x,
-      //   last.y,
-      //   crds[c],
-      //   crds[c + 1],
-      //   crds[c + 2],
-      //   crds[c + 3],
-      //   crds[c + 4],
-      //   crds[c + 5]
-      // ])
-      // console.log(bbox)
-      // console.log()
-
       minMaxCord(bbox.x.min, bbox.y.min)
       minMaxCord(bbox.x.max, bbox.y.min)
       minMaxCord(bbox.x.max, bbox.y.max)
@@ -159,11 +145,6 @@ function getBoundingBox({ cmds, crds }: Path) {
       // Quadratic bézier curve
       const quadratic = new Bezier(last.x, last.y, crds[c], crds[c + 1], crds[c + 2], crds[c + 3])
       const bbox = quadratic.bbox()
-
-      // console.log('Quadratic bézier curve --------')
-      // console.log([last.x, last.y, crds[c], crds[c + 1], crds[c + 2], crds[c + 3]])
-      // console.log(bbox)
-      // console.log()
 
       minMaxCord(bbox.x.min, bbox.y.min)
       minMaxCord(bbox.x.max, bbox.y.min)
