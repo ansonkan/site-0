@@ -13,11 +13,6 @@
     Mesh
   } from 'three'
   import Stats from 'stats.js'
-  import { Font } from '@fredli74/typr'
-
-  // import NotoSansTcOtf from '$assets/fonts/NotoSansTC-Regular.otf?url'
-  // import paths from '$assets/paths/NotoSans-b7bed.json'
-  // import { test } from '$lib/Typr'
 
   let width = 0
   let height = 0
