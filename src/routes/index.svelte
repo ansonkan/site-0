@@ -17,8 +17,6 @@
 
   // import NotoSansTcOtf from '$assets/fonts/NotoSansTC-Regular.otf?url'
   // import paths from '$assets/paths/NotoSans-b7bed.json'
-  import paths from '$assets/paths/NotoSansTC-f8c67.json'
-
   // import { test } from '$lib/Typr'
 
   let width = 0
@@ -40,8 +38,6 @@
   onMount(() => {
     if (browser) {
       init()
-
-      drawPaths()
     }
   })
 
@@ -125,62 +121,20 @@
     render()
     stats.end()
   }
-
-  function drawPaths() {
-    const dummyFont = new Font(new ArrayBuffer(1024))
-
-    // const cnv = document.createElement('canvas')
-    const cnv = document.getElementById('test-paths') as HTMLCanvasElement
-    const ctx = cnv.getContext('2d')
-
-    if (!ctx) return
-
-    const DPR = window.devicePixelRatio || 1
-    const unitsPerEm = paths.unitsPerEm // `font.head.unitsPerEm`
-    const hheaAscender = paths.ascender
-    const hheaDescender = paths.descender
-    const scale = (fontSize * DPR) / unitsPerEm
-
-    // cnv.width = cnv.width
-
-    cnv.width = Math.round(Math.abs(paths.bbox.x.max) * scale)
-    cnv.height = Math.round(Math.abs(hheaAscender - hheaDescender) * scale)
-    // console.log(Math.round(Math.abs(hheaAscender - hheaDescender) * scale))
-    // ctx.translate(0 * DPR, 100 * DPR)
-    ctx.translate(0 * DPR, Math.round(hheaAscender * scale) * DPR)
-
-    ctx.fillStyle = '#FF00FF'
-    ctx.fillRect(0, 0, cnv.width, 1)
-    ctx.fillRect(0, -Math.round(hheaAscender * scale), cnv.width, 1)
-    ctx.fillRect(0, -Math.round(hheaDescender * scale), cnv.width, 1)
-
-    ctx.scale(scale, -scale)
-
-    dummyFont.pathToContext(paths, ctx)
-    ctx.fill()
-
-    const ct = new CanvasTexture(ctx.canvas)
-    const material = new MeshBasicMaterial({ map: ct })
-    const geo = new BoxGeometry(300, 300, 300)
-    box = new Mesh(geo, material)
-
-    scene.add(box)
-  }
 </script>
 
 <canvas id="main" bind:this={canvas} />
-<canvas id="test-paths" />
 
 <div class="text">
   <p style="font-size: {fontSize}px;">Hello! I'm Anson Kan :D</p>
-  <!-- <p class="hk" style="font-size: {fontSize}px;">Hello! I'm Anson Kan :D</p>
+  <p class="hk" style="font-size: {fontSize}px;">Hello! I'm Anson Kan :D</p>
   <p class="hk" style="font-size: {fontSize}px;">你好！ 我叫Anson諱！</p>
   <p class="hk" style="font-size: {fontSize}px;">昨日すき焼きを食べました</p>
   <p class="hk" style="font-size: {fontSize}px;">
     저는 동물을 좋아하는데 가족들이 동물을 별로 안 좋아해요.
   </p>
   <p class="barcode" style="font-size: {fontSize}px;">Hello! I'm Anson Kan :D</p>
-  <p class="press-start-2p" style="font-size: {fontSize}px;">Hello! I'm Anson Kan :D</p> -->
+  <p class="press-start-2p" style="font-size: {fontSize}px;">Hello! I'm Anson Kan :D</p>
 </div>
 
 <style lang="scss">

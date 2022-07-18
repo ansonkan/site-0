@@ -11,12 +11,6 @@ const config = {
     adapter: adapter(),
     prerender: {
       default: true
-    },
-    alias: {
-      $assets: 'src/assets'
-    },
-    vite: {
-      assetsInclude: ['**/*.gltf', '**/*.fnt']
     }
   }
 }
