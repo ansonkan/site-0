@@ -10,6 +10,21 @@ declare namespace App {
   // interface Stuff {}
 }
 
+declare module '*.glb' {
+  const src: string
+  export default src
+}
+
+declare module '*.gltf' {
+  const src: string
+  export default src
+}
+
+declare module '*.glsl' {
+  const src: string
+  export default src
+}
+
 declare module 'troika-three-text' {
   export class Text extends THREE.Mesh {
     text: string

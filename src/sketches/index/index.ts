@@ -1,9 +1,21 @@
-import { Clock, Scene, WebGLRenderer, PerspectiveCamera } from 'three'
+import {
+  Clock,
+  Scene,
+  WebGLRenderer,
+  PerspectiveCamera,
+  ShaderMaterial,
+  DoubleSide,
+  BoxGeometry,
+  Mesh,
+  MeshBasicMaterial
+} from 'three'
 import { Text, preloadFont } from 'troika-three-text'
 import Stats from 'stats.js'
 import GUI from 'lil-gui'
 
 import NotoSansRegularUrl from '@assets/fonts/NotoSans-Regular.ttf?url'
+import ScreenFrag from './shaders/text/frag.glsl?raw'
+import ScreenVert from './shaders/text/vert.glsl?raw'
 
 import type { Sketch } from '@utils/types'
 
@@ -48,13 +60,20 @@ export async function createSketch(): Promise<Sketch> {
   const scene = new Scene()
   scene.add(camera)
 
+  const screenMaterial = new ShaderMaterial({
+    fragmentShader: ScreenFrag,
+    vertexShader: ScreenVert,
+    uniforms: { u_time: { value: 0 } },
+    side: DoubleSide
+  })
+
   const text = new Text()
   scene.add(text)
   text.font = NotoSansRegularUrl
   text.text = 'Hello world!'
   text.fontSize = 100
-  text.position.z = -2
-  text.color = 0x9966ff
+  text.material = screenMaterial
+
   await new Promise((resolve, reject) => {
     try {
       text.sync(resolve)
@@ -62,6 +81,9 @@ export async function createSketch(): Promise<Sketch> {
       reject()
     }
   })
+
+  const box = new Mesh(new BoxGeometry(100, 100, 100), new MeshBasicMaterial())
+  scene.add(box)
 
   const renderer = new WebGLRenderer({ antialias: true })
   renderer.setPixelRatio(window.devicePixelRatio || 1)
@@ -77,9 +99,17 @@ export async function createSketch(): Promise<Sketch> {
     if (paused) return
 
     const delta = clock.getDelta()
+    const time = clock.getElapsedTime()
 
-    text.rotateX(delta)
-    text.rotateY(delta * -0.25)
+    // NOTE: text moves unpredictably off screens (when current tab/virtual desktop is not active)
+    // text.rotateX(delta)
+    // text.rotateY(delta * -0.25)
+
+    box.rotateX(delta)
+    box.rotateY(delta * 0.25)
+    box.rotateZ(delta * -0.35)
+
+    screenMaterial.uniforms.u_time.value = time
 
     renderer.render(scene, camera)
   }
@@ -114,6 +144,8 @@ export async function createSketch(): Promise<Sketch> {
     window.removeEventListener('wheel', onScroll)
     text.dispose()
     renderer.dispose()
+
+    // TODO: remove those added dom elements including the canvas
   }
 
   function onResize() {
