@@ -4,5 +4,5 @@ varying vec2 v_uv;
 
 void main() {
     v_uv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position.x - (cos(uv.y) * 100.0), position.y, position.z - (sin(uv.x) * 100.0), 1.0);
 }
