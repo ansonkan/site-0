@@ -2,8 +2,5 @@
   <slot />
 </main>
 
-<style lang="scss" global>
-  body {
-    margin: 0;
-  }
+<style lang="scss" windi:preflights:global windi:safelist:global>
 </style>
