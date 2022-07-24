@@ -11,6 +11,7 @@ specifiers:
   eslint: ^8.20.0
   eslint-config-prettier: ^8.5.0
   eslint-plugin-svelte3: ^4.0.0
+  lil-gui: ^0.17.0
   prettier: ^2.7.1
   prettier-plugin-svelte: ^2.7.0
   sass: ^1.54.0
@@ -41,6 +42,7 @@ devDependencies:
   eslint: 8.20.0
   eslint-config-prettier: 8.5.0_eslint@8.20.0
   eslint-plugin-svelte3: 4.0.0_piwa6j2njmnknm35bh3wz5v52y
+  lil-gui: 0.17.0
   prettier: 2.7.1
   prettier-plugin-svelte: 2.7.0_o3ioganyptcsrh6x4hnxvjkpqi
   sass: 1.54.0
@@ -1298,6 +1300,10 @@ packages:
     dependencies:
       prelude-ls: 1.2.1
       type-check: 0.4.0
+    dev: true
+
+  /lil-gui/0.17.0:
+    resolution: {integrity: sha512-MVBHmgY+uEbmJNApAaPbtvNh1RCAeMnKym82SBjtp5rODTYKWtM+MXHCifLe2H2Ti1HuBGBtK/5SyG4ShQ3pUQ==}
     dev: true
 
   /lodash.merge/4.6.2:

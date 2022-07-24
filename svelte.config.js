@@ -12,6 +12,11 @@ const config = {
     adapter: adapter(),
     prerender: {
       default: true
+    },
+    alias: {
+      '@assets': 'src/assets',
+      '@utils': 'src/utils',
+      '@sketches': 'src/sketches'
     }
   }
 }

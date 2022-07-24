@@ -46,7 +46,15 @@ declare module 'troika-three-text' {
     gpuAccelerateSDF: boolean
     debugSDF: boolean
 
-    sync: (callback?: (...args: unknown) => unknown) => void
+    sync: (callback?: (param: unknown) => void) => void
     dispose: () => void
   }
+
+  export function preloadFont(
+    option: {
+      font: string
+      characters: string
+    },
+    callback: () => void
+  )
 }
