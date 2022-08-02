@@ -9,5 +9,6 @@ void main() {
   float pct = abs(sin(u_time));
   vec3 color = mix(colorA, colorB, pct);
 
-  gl_FragColor = vec4(color, 1.0);
+  gl_FragColor = vec4(v_uv.x, 1.0, 0.0, v_uv.y);
+
 }

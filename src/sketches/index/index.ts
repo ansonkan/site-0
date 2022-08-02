@@ -10,8 +10,10 @@ import {
   MeshBasicMaterial
 } from 'three'
 import { Text, preloadFont } from 'troika-three-text'
+
 import Stats from 'stats.js'
 import GUI from 'lil-gui'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 import NotoSansRegularUrl from '@assets/fonts/NotoSans-Regular.ttf?url'
 import ScreenFrag from './shaders/text/frag.glsl?raw'
@@ -37,13 +39,15 @@ export async function createSketch(): Promise<Sketch> {
   const params = {
     start,
     pause,
-    destroy
+    destroy,
+    xMultiplier: 1.0
   }
 
   const gui = new GUI()
   gui.add(params, 'start')
   gui.add(params, 'pause')
   gui.add(params, 'destroy')
+  gui.add(params, 'xMultiplier', -10, 10)
 
   let started = false
   let paused = false
@@ -54,7 +58,7 @@ export async function createSketch(): Promise<Sketch> {
 
   const z = 600
   const fov = 2 * Math.atan(height / 2 / z) * (180 / Math.PI)
-  const camera = new PerspectiveCamera(fov, width / height, 0.1, 1000)
+  const camera = new PerspectiveCamera(fov, width / height, 0.1, 2500)
   camera.position.set(0, 0, z)
 
   const scene = new Scene()
@@ -63,7 +67,7 @@ export async function createSketch(): Promise<Sketch> {
   const screenMaterial = new ShaderMaterial({
     fragmentShader: ScreenFrag,
     vertexShader: ScreenVert,
-    uniforms: { u_time: { value: 0 } },
+    uniforms: { u_time: { value: 0 }, x_multiplier: { value: params.xMultiplier } },
     side: DoubleSide
   })
 
@@ -73,6 +77,8 @@ export async function createSketch(): Promise<Sketch> {
   text.text = 'Hello world!'
   text.fontSize = 100
   text.material = screenMaterial
+  text.anchorX = 'center'
+  text.anchorY = 'center'
 
   await new Promise((resolve, reject) => {
     try {
@@ -95,6 +101,9 @@ export async function createSketch(): Promise<Sketch> {
   window.addEventListener('wheel', onScroll)
   onResize()
 
+  const controls = new OrbitControls(camera, renderer.domElement)
+  controls.update()
+
   function render() {
     if (paused) return
 
@@ -110,6 +119,9 @@ export async function createSketch(): Promise<Sketch> {
     box.rotateZ(delta * -0.35)
 
     screenMaterial.uniforms.u_time.value = time
+    screenMaterial.uniforms.x_multiplier.value = params.xMultiplier
+
+    controls.update()
 
     renderer.render(scene, camera)
   }
