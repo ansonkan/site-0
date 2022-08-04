@@ -7,30 +7,38 @@ import {
   DoubleSide,
   BoxGeometry,
   Mesh,
-  MeshBasicMaterial
+  MeshBasicMaterial,
+  MeshMatcapMaterial,
+  AmbientLight,
+  DirectionalLight,
+  TorusKnotGeometry
 } from 'three'
-import { Text, preloadFont } from 'troika-three-text'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+// import { Text, preloadFont } from 'troika-three-text'
 
 import Stats from 'stats.js'
 import GUI from 'lil-gui'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
-import NotoSansRegularUrl from '@assets/fonts/NotoSans-Regular.ttf?url'
-import ScreenFrag from './shaders/text/frag.glsl?raw'
-import ScreenVert from './shaders/text/vert.glsl?raw'
+import TextGlbPath from '@assets/blends/text.glb?url'
+import SheenChairGlbPath from '@assets/blends/SheenChair.glb?url'
+// import NotoSansRegularUrl from '@assets/fonts/NotoSans-Regular.ttf?url'
+// import ScreenFrag from './shaders/text/frag.glsl?raw'
+// import ScreenVert from './shaders/text/vert.glsl?raw'
 
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader'
 import type { Sketch } from '@utils/types'
 
 export async function createSketch(): Promise<Sketch> {
-  await new Promise<void>((resolve, reject) => {
-    try {
-      preloadFont({ font: NotoSansRegularUrl, characters: 'abcdefghijklmnopqrstuvwxyz,!' }, () => {
-        resolve()
-      })
-    } catch {
-      reject()
-    }
-  })
+  // await new Promise<void>((resolve, reject) => {
+  //   try {
+  //     preloadFont({ font: NotoSansRegularUrl, characters: 'abcdefghijklmnopqrstuvwxyz,!' }, () => {
+  //       resolve()
+  //     })
+  //   } catch {
+  //     reject()
+  //   }
+  // })
 
   // debug
   const stats = new Stats()
@@ -64,32 +72,53 @@ export async function createSketch(): Promise<Sketch> {
   const scene = new Scene()
   scene.add(camera)
 
-  const screenMaterial = new ShaderMaterial({
-    fragmentShader: ScreenFrag,
-    vertexShader: ScreenVert,
-    uniforms: { u_time: { value: 0 }, x_multiplier: { value: params.xMultiplier } },
-    side: DoubleSide
+  // const light = new AmbientLight(0x404040)
+  const directionalLight = new DirectionalLight(0xffffff, 0.5)
+  scene.add(directionalLight)
+
+  const textGLTF = await new Promise<GLTF>((resolve) => {
+    const loader = new GLTFLoader()
+    loader.load(TextGlbPath, (gltf) => {
+      resolve(gltf)
+    })
   })
 
-  const text = new Text()
-  scene.add(text)
-  text.font = NotoSansRegularUrl
-  text.text = 'Hello world!'
-  text.fontSize = 100
-  text.material = screenMaterial
-  text.anchorX = 'center'
-  text.anchorY = 'center'
+  console.log({ textGLTF })
+  console.log(textGLTF.scene.getObjectByName('Text001'))
+  const Text001 = textGLTF.scene.getObjectByName('Text001') as Mesh
+  Text001.material = new MeshMatcapMaterial()
+  Text001.scale.set(50, 50, 50)
+  scene.add(Text001)
+  // const roundTextBanner = textGLTF.scene.ch
+  // console.log({ roundTextBanner })
+  // roundTextBanner && scene.add(roundTextBanner)
 
-  await new Promise((resolve, reject) => {
-    try {
-      text.sync(resolve)
-    } catch {
-      reject()
-    }
-  })
+  // const screenMaterial = new ShaderMaterial({
+  //   fragmentShader: ScreenFrag,
+  //   vertexShader: ScreenVert,
+  //   uniforms: { u_time: { value: 0 }, x_multiplier: { value: params.xMultiplier } },
+  //   side: DoubleSide
+  // })
 
-  const box = new Mesh(new BoxGeometry(100, 100, 100), new MeshBasicMaterial())
-  scene.add(box)
+  // const text = new Text()
+  // scene.add(text)
+  // text.font = NotoSansRegularUrl
+  // text.text = 'Hello world!'
+  // text.fontSize = 100
+  // text.material = screenMaterial
+  // text.anchorX = 'center'
+  // text.anchorY = 'center'
+
+  // await new Promise((resolve, reject) => {
+  //   try {
+  //     text.sync(resolve)
+  //   } catch {
+  //     reject()
+  //   }
+  // })
+
+  const box = new Mesh(new TorusKnotGeometry(100, 30, 100, 16), new MeshMatcapMaterial())
+  // scene.add(box)
 
   const renderer = new WebGLRenderer({ antialias: true })
   renderer.setPixelRatio(window.devicePixelRatio || 1)
@@ -108,18 +137,18 @@ export async function createSketch(): Promise<Sketch> {
     if (paused) return
 
     const delta = clock.getDelta()
-    const time = clock.getElapsedTime()
+    // const time = clock.getElapsedTime()
 
     // NOTE: text moves unpredictably off screens (when current tab/virtual desktop is not active)
     // text.rotateX(delta)
     // text.rotateY(delta * -0.25)
 
-    box.rotateX(delta)
-    box.rotateY(delta * 0.25)
-    box.rotateZ(delta * -0.35)
+    // Text001.rotateX(delta)
+    Text001.rotateY(delta * 0.25)
+    Text001.rotateZ(delta * 0.5)
 
-    screenMaterial.uniforms.u_time.value = time
-    screenMaterial.uniforms.x_multiplier.value = params.xMultiplier
+    // screenMaterial.uniforms.u_time.value = time
+    // screenMaterial.uniforms.x_multiplier.value = params.xMultiplier
 
     controls.update()
 
@@ -154,7 +183,7 @@ export async function createSketch(): Promise<Sketch> {
     paused = true
     window.removeEventListener('resize', onResize)
     window.removeEventListener('wheel', onScroll)
-    text.dispose()
+    // text.dispose()
     renderer.dispose()
 
     // TODO: remove those added dom elements including the canvas
