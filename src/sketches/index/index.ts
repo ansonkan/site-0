@@ -83,12 +83,21 @@ export async function createSketch(): Promise<Sketch> {
     })
   })
 
-  console.log({ textGLTF })
-  console.log(textGLTF.scene.getObjectByName('Text001'))
+  console.log(textGLTF)
+
   const Text001 = textGLTF.scene.getObjectByName('Text001') as Mesh
+  console.log(Text001)
   Text001.material = new MeshMatcapMaterial()
   Text001.scale.set(50, 50, 50)
   scene.add(Text001)
+
+  console.log(Text001.geometry)
+
+  const Torus = textGLTF.scene.getObjectByName('Torus') as Mesh
+  Torus.material = new MeshMatcapMaterial()
+  Torus.scale.set(10, 10, 10)
+  scene.add(Torus)
+
   // const roundTextBanner = textGLTF.scene.ch
   // console.log({ roundTextBanner })
   // roundTextBanner && scene.add(roundTextBanner)
@@ -117,7 +126,7 @@ export async function createSketch(): Promise<Sketch> {
   //   }
   // })
 
-  const box = new Mesh(new TorusKnotGeometry(100, 30, 100, 16), new MeshMatcapMaterial())
+  // const box = new Mesh(new TorusKnotGeometry(100, 30, 100, 16), new MeshMatcapMaterial())
   // scene.add(box)
 
   const renderer = new WebGLRenderer({ antialias: true })
@@ -149,6 +158,24 @@ export async function createSketch(): Promise<Sketch> {
 
     // screenMaterial.uniforms.u_time.value = time
     // screenMaterial.uniforms.x_multiplier.value = params.xMultiplier
+
+    const positions = Torus.geometry.attributes.position.array
+    let x = 0
+    let y = 0
+    let z = 0
+    let index = 0
+
+    for (let i = 0; i < Torus.geometry.attributes.position.count; i++) {
+      positions[index++] = x
+      positions[index++] = y
+      positions[index++] = z
+
+      x += (Math.random() - 0.5) * 0.5
+      y += (Math.random() - 0.5) * 0.5
+      z += (Math.random() - 0.5) * 0.5
+    }
+
+    Torus.geometry.attributes.position.needsUpdate = true
 
     controls.update()
 
