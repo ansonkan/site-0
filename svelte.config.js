@@ -16,9 +16,10 @@ const config = {
     alias: {
       '@assets': 'src/assets',
       '@utils': 'src/utils',
-      '@sketches': 'src/sketches'
+      '@sketches': 'src/sketches',
+      '@materials': 'src/materials'
     }
-  }
+  },
 }
 
 export default config

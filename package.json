@@ -6,7 +6,7 @@
     "build": "vite build",
     "package": "svelte-kit package",
     "preview": "vite preview",
-    "prepare": "svelte-kit sync",
+    "postinstall": "git submodule update && svelte-kit sync",
     "test": "playwright test",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
@@ -27,18 +27,21 @@
     "lil-gui": "^0.17.0",
     "prettier": "^2.7.1",
     "prettier-plugin-svelte": "^2.7.0",
-    "sass": "^1.54.2",
+    "sass": "^1.54.3",
     "stats.js": "^0.17.0",
     "svelte": "^3.49.0",
     "svelte-check": "^2.8.0",
     "svelte-preprocess": "^4.10.7",
     "svelte-windicss-preprocess": "^4.2.8",
     "tslib": "^2.4.0",
-    "typescript": "^4.7.4"
+    "typescript": "^4.7.4",
+    "vite-plugin-glsl": "^0.3.0"
   },
   "type": "module",
   "dependencies": {
     "cannon-es": "^0.19.0",
+    "gsap": "^3.10.4",
+    "postprocessing": "^6.28.5",
     "three": "^0.141.0",
     "troika-three-text": "^0.46.4",
     "vite": "^3.0.4"
