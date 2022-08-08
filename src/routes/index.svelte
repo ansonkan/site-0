@@ -61,6 +61,11 @@
 
 <svelte:head>
   <title>Anson Kan</title>
+  <meta
+    name="description"
+    content="I'm a front-end developer from HK and trying to do more than just front-end."
+  />
+  <meta name="keywords" content="HK, Hong Kong, Front-end, Developer" />
 </svelte:head>
 
 {#if loading}
