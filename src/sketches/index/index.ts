@@ -175,6 +175,7 @@ export async function createSketch(canvas: HTMLCanvasElement): Promise<Sketch> {
   window.addEventListener('resize', onResize)
   // window.addEventListener('wheel', onScroll)
   window.addEventListener('pointermove', onPointerMove)
+  canvas.addEventListener('pointerdown', onPointerMove)
   onResize()
 
   // const controls = new OrbitControls(camera, canvas)
@@ -237,6 +238,7 @@ export async function createSketch(canvas: HTMLCanvasElement): Promise<Sketch> {
     window.removeEventListener('resize', onResize)
     // window.removeEventListener('wheel', onScroll)
     window.removeEventListener('pointermove', onPointerMove)
+    canvas.removeEventListener('pointerdown', onPointerMove)
     renderer.dispose()
 
     // TODO: remove those added dom elements including the canvas
