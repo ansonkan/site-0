@@ -118,14 +118,13 @@ export async function createSketch(canvas: HTMLCanvasElement): Promise<Sketch> {
     depth: false
   })
   renderer.setPixelRatio(window.devicePixelRatio || 1)
-  renderer.setSize(width, height)
 
   const composer = new PP.EffectComposer(renderer)
 
   const depthOfFieldEffect = new PP.DepthOfFieldEffect(camera, {
     focusDistance: 0,
     focalLength: 0.001,
-    bokehScale: 50,
+    bokehScale: 25,
     height: 480
   })
 
@@ -220,8 +219,11 @@ export async function createSketch(canvas: HTMLCanvasElement): Promise<Sketch> {
       paused = false
       clock.start()
       window.requestAnimationFrame(animate)
-      timeline.play()
       started = true
+
+      setTimeout(() => {
+        timeline.play()
+      }, 1000)
     }
   }
 
@@ -235,7 +237,6 @@ export async function createSketch(canvas: HTMLCanvasElement): Promise<Sketch> {
     window.removeEventListener('resize', onResize)
     // window.removeEventListener('wheel', onScroll)
     window.removeEventListener('pointermove', onPointerMove)
-    // text.dispose()
     renderer.dispose()
 
     // TODO: remove those added dom elements including the canvas
@@ -254,9 +255,9 @@ export async function createSketch(canvas: HTMLCanvasElement): Promise<Sketch> {
     renderer.setSize(width, height)
   }
 
-  function onScroll(event: Event) {
-    // console.log(event)
-  }
+  // function onScroll(event: Event) {
+  //   console.log(event)
+  // }
 
   function onPointerMove(event: PointerEvent) {
     mouse.x = (event.clientX - width / 2) / width

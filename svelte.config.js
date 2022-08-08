@@ -19,7 +19,7 @@ const config = {
       '@sketches': 'src/sketches',
       '@materials': 'src/materials'
     }
-  },
+  }
 }
 
 export default config

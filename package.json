@@ -35,6 +35,7 @@
     "svelte-windicss-preprocess": "^4.2.8",
     "tslib": "^2.4.0",
     "typescript": "^4.7.4",
+    "unplugin-icons": "^0.14.8",
     "vite-plugin-glsl": "^0.3.0"
   },
   "type": "module",
