@@ -1,5 +1,3 @@
-uniform float time;
-
 varying vec2 vUv;
 
 void main() {

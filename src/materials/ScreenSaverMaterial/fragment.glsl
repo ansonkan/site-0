@@ -2,13 +2,14 @@
 #include ../../lygia/color/space/hsv2rgb.glsl;
 
 uniform float time;
+uniform float seed;
 
 varying vec2 vUv;
 
 void main() {
     vec3 c = vec3(0.0);
 
-    float n = cnoise(vec3(vUv, (time + 14.0) / 10.));
+    float n = cnoise(vec3(vUv, (time + seed) / 10.));
 
     if(n <= .1) {
         c = vec3(0.0941, 0.3059, 0.4667);

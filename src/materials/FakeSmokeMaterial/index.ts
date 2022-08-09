@@ -5,16 +5,18 @@ import fragmentShader from './fragment.glsl'
 
 interface Props {
   time: number
+  seed?: number
 }
 
 export class FakeSmokeMaterial extends THREE.ShaderMaterial {
-  constructor({ time = 0 }: Props) {
+  constructor({ time, seed = Math.random() * 50 }: Props) {
     super({
       vertexShader,
       fragmentShader,
       transparent: true,
       uniforms: {
-        time: { value: time }
+        time: { value: time },
+        seed: { value: seed }
       }
     })
   }
