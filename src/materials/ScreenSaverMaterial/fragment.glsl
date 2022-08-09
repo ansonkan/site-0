@@ -1,6 +1,4 @@
-#include ../../lygia/generative/snoise.glsl;
-#include ../../lygia/sdf/circleSDF.glsl;
-#include ../../lygia/draw/stroke.glsl;
+#include ../../lygia/generative/cnoise.glsl;
 #include ../../lygia/color/space/hsv2rgb.glsl;
 
 uniform float time;
@@ -10,7 +8,7 @@ varying vec2 vUv;
 void main() {
     vec3 c = vec3(0.0);
 
-    float n = snoise(vec3(vUv, time / 10.));
+    float n = cnoise(vec3(vUv, time / 10.));
 
     if(n <= .1) {
         c = vec3(0.0941, 0.3059, 0.4667);
