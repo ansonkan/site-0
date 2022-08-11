@@ -1,15 +1,15 @@
 #include ../../lygia/generative/cnoise.glsl;
 #include ../../lygia/color/space/hsv2rgb.glsl;
 
-uniform float time;
-uniform float seed;
+uniform float u_time;
+uniform float u_seed;
 
-varying vec2 vUv;
+varying vec2 v_uv;
 
 void main() {
     vec3 c = vec3(0.0);
 
-    float n = cnoise(vec3(vUv, (time + seed) / 10.));
+    float n = cnoise(vec3(v_uv, (u_time + u_seed) / 10.));
 
     if(n <= .1) {
         c = vec3(0.0941, 0.3059, 0.4667);

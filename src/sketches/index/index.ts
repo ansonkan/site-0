@@ -89,7 +89,7 @@ export async function createSketch(canvas: HTMLCanvasElement): Promise<Sketch> {
   backgroundMesh.material = new THREE.MeshBasicMaterial({ map: backgroundTexture })
 
   const laptopScreenMesh = kitchenGlb.scene.getObjectByName('LaptopScreen') as THREE.Mesh
-  const screenSaverMaterial = new ScreenSaverMaterial({ time: 0 })
+  const screenSaverMaterial = new ScreenSaverMaterial({ u_time: 0 })
   laptopScreenMesh.material = screenSaverMaterial
 
   const balconyDoorGlassesMesh = kitchenGlb.scene.getObjectByName(
@@ -102,8 +102,8 @@ export async function createSketch(canvas: HTMLCanvasElement): Promise<Sketch> {
   })
 
   const fakeSmokeMaterials = [
-    new FakeSmokeMaterial({ time: 0 }),
-    new FakeSmokeMaterial({ time: 0 })
+    new FakeSmokeMaterial({ u_time: 0 }),
+    new FakeSmokeMaterial({ u_time: 0 })
   ]
   const smoke001Mesh = kitchenGlb.scene.getObjectByName('Smoke001') as THREE.Mesh
   smoke001Mesh.material = fakeSmokeMaterials[0]
@@ -187,15 +187,10 @@ export async function createSketch(canvas: HTMLCanvasElement): Promise<Sketch> {
     // const delta = clock.getDelta()
     const time = clock.getElapsedTime()
 
-    //
-    if (depthOfFieldEffect.circleOfConfusionMaterial.uniforms.focusDistance.value === 0) {
-      // console.log('123')
-    }
-
     fakeSmokeMaterials.forEach(
-      (material, index) => (material.uniforms.time.value = time + index * 10)
+      (material, index) => (material.uniforms.u_time.value = time + index * 10)
     )
-    screenSaverMaterial.uniforms.time.value = time
+    screenSaverMaterial.uniforms.u_time.value = time
 
     target.x += (mouse.x - target.x) * 0.05
     target.y += (-mouse.y - target.y) * 0.05
